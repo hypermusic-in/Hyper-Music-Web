@@ -3,36 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hyper Music - Official Song</title>
+  <title>माई म्यूज़िक स्टूडियो (Google Drive कनेक्टेड)</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: #0b0f19; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-    .player-card { background: #162033; border: 1px solid #1e293b; border-radius: 16px; padding: 24px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    .brand-title { color: #38bdf8; font-size: 20px; font-weight: 700; margin-bottom: 18px; letter-spacing: 0.5px; }
-    .cover-art { width: 100%; height: 280px; object-fit: cover; border-radius: 12px; background: #0f172a; margin-bottom: 18px; border: 1px solid #334155; }
-    .song-title { font-size: 20px; font-weight: 600; color: #f1f5f9; margin-bottom: 6px; }
-    .artist-name { font-size: 14px; color: #94a3b8; margin-bottom: 22px; }
-    audio { width: 100%; outline: none; border-radius: 8px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0a0f1d; color: #f8fafc; padding: 14px; max-width: 600px; margin: auto; }
+    header { text-align: center; margin: 15px 0 20px; }
+    h2 { color: #38bdf8; font-size: 22px; }
+    p.sub { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+    
+    .status-card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .btn-refresh { background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
+    
+    .song-list { display: flex; flex-direction: column; gap: 12px; }
+    .song-card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; }
+    .poster-img { width: 75px; height: 75px; border-radius: 8px; object-fit: cover; background: #1f2937; flex-shrink: 0; }
+    .song-info { flex-grow: 1; overflow: hidden; }
+    .song-title { font-weight: bold; font-size: 15px; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    audio { width: 100%; margin-top: 8px; height: 32px; }
+    
+    .loader { text-align: center; padding: 30px; color: #38bdf8; font-size: 14px; }
+    .empty-msg { text-align: center; padding: 25px; color: #94a3b8; font-size: 13px; line-height: 1.6; }
   </style>
 </head>
 <body>
 
-  <div class="player-card">
-    <div class="brand-title">Hyper Music With AI</div>
+  <header>
+    <h2>🎵 माई म्यूज़िक लाइब्रेरी</h2>
+    <p class="sub">Google Drive से सीधे कनेक्टेड</p>
+  </header>
 
-    <!-- Album Poster -->
-    <img class="cover-art" src="poster.jpg" alt="Song Poster" onerror="this.src='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop'">
-
-    <!-- Song Details -->
-    <div class="song-title">इश्क में रंग दी ये जिंदगानी हमारी</div>
-    <div class="artist-name">Hyper Music Official</div>
-
-    <!-- Direct Audio Player -->
-    <audio controls>
-      <source src="song.mp3" type="audio/mpeg">
-      Your browser does not support the audio element.
-    </audio>
+  <div class="status-card">
+    <span id="syncText" style="font-size: 12px; color: #10b981;">● Google Drive लिंक कनेक्टेड</span>
+    <button class="btn-refresh" onclick="loadDriveSongs()">🔄 रिफ्रेश करें</button>
   </div>
 
+  <div id="loader" class="loader">⏳ Google Drive से गाने खोजे जा रहे हैं...</div>
+  
+  <div id="songContainer" class="song-list" style="display: none;"></div>
+
+  <script>
+    // आपका लाइव Google Web App URL
+    const API_URL = "https://script.google.com/macros/s/AKfycby7hGWisolXHxFxEy5nqrds4POcH1753_8Nlar2wP34ykGBqXdvom37K6bmEWULV_mD/exec";
+
+    async function loadDriveSongs() {
+      const loader = document.getElementById('loader');
+      const container = document.getElementById('songContainer');
+      const syncText = document.getElementById('syncText');
+      
+      loader.style.display = 'block';
+      container.style.display = 'none';
+      syncText.innerText = "⏳ अपडेट हो रहा है...";
+
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        loader.style.display = 'none';
+        container.style.display = 'flex';
+        container.innerHTML = '';
+        syncText.innerText = `● ${data.length} गाने मिले`;
+
+        if (!data || data.length === 0) {
+          container.innerHTML = `
+            <div class="empty-msg">
+              📁 Drive फ़ोल्डर में अभी कोई ऑडियो नहीं मिला!<br>
+              कृपया अपने Google Drive के उस फ़ोल्डर में MP3 फ़ाइल डालें और फिर 'रिफ्रेश करें' दबाएँ।
+            </div>`;
+          return;
+        }
+
+        data.forEach(song => {
+          const card = document.createElement('div');
+          card.className = 'song-card';
+          card.innerHTML = `
+            <img class="poster-img" src="${song.photo || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200'}" alt="Poster" onerror="this.src='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200'">
+            <div class="song-info">
+              <div class="song-title">${song.title || 'अनाम ट्रैक'}</div>
+              <audio controls preload="none">
+                <source src="${song.audioUrl}" type="audio/mpeg">
+                आपका ब्राउज़र ऑडियो सपोर्ट नहीं करता।
+              </audio>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+      } catch (err) {
+        loader.style.display = 'none';
+        container.style.display = 'block';
+        syncText.innerText = "⚠️ कनेक्शन एरर";
+        container.innerHTML = `
+          <div class="empty-msg" style="color: #f87171;">
+            फ़ाइलें लोड नहीं हो सकीं। कृपया सुनिश्चित करें कि आपके Google Drive फ़ोल्डर की परमिशन "Anyone with the link" (कोई भी देख सकता है) पर सेट है।
+          </div>`;
+      }
+    }
+
+    // पेज खुलते ही अपने-आप गाने लोड करे
+    window.onload = loadDriveSongs;
+  </script>
 </body>
 </html>
