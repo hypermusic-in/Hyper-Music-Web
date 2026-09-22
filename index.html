@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hyper Music With AI - 3D Player</title>
+  <title>Hyper Music With AI</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body {
@@ -151,9 +151,7 @@
   <div class="brand-title">Hyper Music With AI</div>
 
   <div class="carousel-container">
-    <div class="carousel-track" id="track">
-      <!-- 3D Posters will be loaded automatically -->
-    </div>
+    <div class="carousel-track" id="track"></div>
   </div>
 
   <div class="player-card">
@@ -166,12 +164,12 @@
       <button class="btn" onclick="nextSong()">⏭</button>
     </div>
 
-    <audio id="audio" controls></audio>
-    <div id="status" class="status-msg">ड्राइव से गाने कनेक्ट हो रहे हैं...</div>
+    <audio id="audio" controls playsinline preload="auto"></audio>
+    <div id="status" class="status-msg">ड्राइव से कनेक्ट हो रहा है...</div>
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyPBMpFDbA7sVX4G83JU-3wANSC0rQIXtOecIHqN09cbmZ21POGx44c6Pf-CbUG8l89/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwovhrtMGCN7r9NGOv1RZPEinw14PQJH77QvcZLekX27iFmwV6yl--wMaeNEBONFvX6/exec";
 
     let songs = [];
     let currentIndex = 0;
@@ -182,14 +180,27 @@
     const playBtn = document.getElementById('playBtn');
     const statusText = document.getElementById('status');
 
+    function getAudioStreamUrl(song) {
+      if (!song) return "";
+      let fileId = song.id;
+      if (!fileId && song.audioUrl) {
+        const match = song.audioUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        if (match) fileId = match[1];
+      }
+      if (fileId) {
+        return `https://docs.google.com/uc?export=download&id=${fileId}`;
+      }
+      return song.audioUrl;
+    }
+
     async function fetchSongs() {
       try {
         const res = await fetch(API_URL);
         songs = await res.json();
 
-        if (songs.length === 0) {
+        if (!songs || songs.length === 0) {
           title.textContent = "कोई गाना नहीं मिला";
-          artist.textContent = "ड्राइव फोल्डर में MP3 डालें";
+          artist.textContent = "ड्राइव फोल्डर चेक करें";
           statusText.textContent = "फ़ोल्डर खाली है";
           return;
         }
@@ -206,7 +217,7 @@
 
     function renderCarousel() {
       track.innerHTML = "";
-      const angleStep = 360 / songs.length;
+      const angleStep = 360 / Math.max(songs.length, 3);
       const radius = Math.max(160, songs.length * 35);
 
       songs.forEach((song, i) => {
@@ -221,7 +232,7 @@
     }
 
     function rotateTrack(index) {
-      const angleStep = 360 / songs.length;
+      const angleStep = 360 / Math.max(songs.length, 3);
       const currentAngle = -index * angleStep;
       track.style.transform = `rotateY(${currentAngle}deg)`;
     }
@@ -231,20 +242,24 @@
       const currentSong = songs[currentIndex];
       title.textContent = currentSong.title;
       artist.textContent = "Hyper Music Official";
-      audio.src = currentSong.audioUrl;
+      audio.src = getAudioStreamUrl(currentSong);
+      audio.load();
       rotateTrack(currentIndex);
     }
 
     function selectSong(index) {
       loadSong(index);
-      audio.play();
+      audio.play().catch(e => console.log("User gesture required"));
       playBtn.textContent = "⏸";
     }
 
     function togglePlay() {
       if (audio.paused) {
-        audio.play();
-        playBtn.textContent = "⏸";
+        audio.play().then(() => {
+          playBtn.textContent = "⏸";
+        }).catch(err => {
+          console.log("Play failed:", err);
+        });
       } else {
         audio.pause();
         playBtn.textContent = "▶";
@@ -254,14 +269,14 @@
     function prevSong() {
       currentIndex = (currentIndex - 1 + songs.length) % songs.length;
       loadSong(currentIndex);
-      audio.play();
+      audio.play().catch(() => {});
       playBtn.textContent = "⏸";
     }
 
     function nextSong() {
       currentIndex = (currentIndex + 1) % songs.length;
       loadSong(currentIndex);
-      audio.play();
+      audio.play().catch(() => {});
       playBtn.textContent = "⏸";
     }
 
