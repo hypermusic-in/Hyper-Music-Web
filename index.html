@@ -21,7 +21,6 @@
       overflow-x: hidden;
     }
 
-    /* डिज़ाइनर लोगो */
     header {
       width: 100%;
       max-width: 480px;
@@ -54,11 +53,10 @@
       margin-top: 4px;
     }
 
-    /* 3D पोस्टर कैरोसेल */
     .carousel-container {
       width: 100%;
       max-width: 420px;
-      height: 250px;
+      height: 260px;
       margin-top: 15px;
       perspective: 1000px;
       display: flex;
@@ -67,8 +65,8 @@
       position: relative;
     }
     .carousel {
-      width: 180px;
-      height: 230px;
+      width: 185px;
+      height: 240px;
       position: relative;
       transform-style: preserve-3d;
       transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -89,12 +87,12 @@
       background-size: cover;
       background-position: center;
       background-color: #111827;
+      transition: border-color 0.3s;
     }
-
-    .carousel-item:nth-child(1) { transform: rotateY(0deg) translateZ(150px); }
-    .carousel-item:nth-child(2) { transform: rotateY(120deg) translateZ(150px); }
-    .carousel-item:nth-child(3) { transform: rotateY(240deg) translateZ(150px); }
-
+    .carousel-item.active {
+      border-color: #38bdf8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), 0 14px 35px rgba(0,0,0,0.9);
+    }
     .poster-badge { font-size: 9px; background: #0284c7; padding: 2px 7px; border-radius: 4px; width: fit-content; margin-bottom: 4px; font-weight: 700; color: #fff; }
     .poster-title { font-size: 14px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); }
 
@@ -103,17 +101,16 @@
       background: #1e293b;
       border: 1px solid #334155;
       color: #38bdf8;
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 15px;
     }
 
-    /* नीचे का प्लेयर */
     .player-card {
       width: 100%;
       max-width: 440px;
@@ -130,7 +127,7 @@
     .track-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .audio-badge { background: rgba(56, 189, 248, 0.15); border: 1px solid #0284c7; color: #38bdf8; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
 
-    audio { width: 100%; height: 36px; margin-top: 8px; outline: none; }
+    audio { width: 100%; height: 38px; margin-top: 8px; outline: none; border-radius: 8px; }
 
     .ticker-box {
       margin-top: 12px;
@@ -145,7 +142,7 @@
       display: inline-block;
       font-size: 11px;
       color: #facc15;
-      animation: scrollLyrics 15s linear infinite;
+      animation: scrollLyrics 16s linear infinite;
     }
     @keyframes scrollLyrics {
       0% { transform: translateX(100%); }
@@ -159,58 +156,47 @@
       margin-top: 15px;
       letter-spacing: 1px;
     }
+
+    #statusMsg {
+      font-size: 13px;
+      color: #38bdf8;
+      margin-top: 25px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
-  <!-- हेडर -->
   <header>
     <div class="brand-title"><span class="brand-icon">⚡</span> HYPER MUSIC</div>
     <div class="brand-subtitle">STUDIO SOUND</div>
   </header>
 
-  <!-- 3D पोस्टर कैरोसेल -->
-  <div class="carousel-container">
-    <div class="carousel" id="carousel">
-      <!-- कार्ड 1: सीधे उसी नाम की फोटो लेगा -->
-      <div class="carousel-item" id="card0" style="background-image: linear-gradient(180deg, transparent 40%, rgba(9,13,22,0.95)), url('Tere Rang Mein.jpg');" onclick="selectTrack(0)">
-        <span class="poster-badge">NOW PLAYING</span>
-        <div class="poster-title">Tere Rang Mein</div>
-      </div>
-      <!-- कार्ड 2 -->
-      <div class="carousel-item" id="card1" style="background-image: linear-gradient(180deg, transparent 40%, rgba(9,13,22,0.95)), url('Naya Sa Khumaar.jpg');" onclick="selectTrack(1)">
-        <span class="poster-badge">TRACK 02</span>
-        <div class="poster-title">Naya Sa Khumaar</div>
-      </div>
-      <!-- कार्ड 3 -->
-      <div class="carousel-item" id="card2" style="background-image: linear-gradient(180deg, transparent 40%, rgba(9,13,22,0.95)), url('Tehrii Aik Nazzaar.jpg');" onclick="selectTrack(2)">
-        <span class="poster-badge">TRACK 03</span>
-        <div class="poster-title">Tehrii Aik Nazzaar</div>
-      </div>
-    </div>
+  <div id="statusMsg">Google Drive से गाने कनेक्ट हो रहे हैं...</div>
+
+  <div class="carousel-container" id="carouselContainer" style="display: none;">
+    <div class="carousel" id="carousel"></div>
   </div>
 
-  <div class="nav-btns">
+  <div class="nav-btns" id="navBtns" style="display: none;">
     <button class="nav-btn" onclick="rotate(-1)">◀</button>
     <button class="nav-btn" onclick="rotate(1)">▶</button>
   </div>
 
-  <!-- नीचे प्लेयर -->
-  <div class="player-card">
+  <div class="player-card" id="playerCard" style="display: none;">
     <div class="track-meta">
       <div>
-        <div class="track-name" id="songTitle">Tere Rang Mein</div>
-        <div class="track-sub">Hyper Music Official Track</div>
+        <div class="track-name" id="songTitle">--</div>
+        <div class="track-sub">Hyper Music Studio Official</div>
       </div>
       <div class="audio-badge">Hi-Fi Audio</div>
     </div>
 
-    <!-- गाना उसी नाम से सीधे प्ले होगा -->
-    <audio id="mainPlayer" controls src="Tere Rang Mein.mp3"></audio>
+    <audio id="mainPlayer" controls src=""></audio>
 
     <div class="ticker-box">
       <div class="ticker-text" id="lyricsText">
-        🎵 तेरे रंग में रंगे हैं नैना... हाइपर म्यूजिक ऑफिशियल स्टूडियो ट्रैक...
+        🎵 Hyper Music Studio • Live Audio
       </div>
     </div>
   </div>
@@ -218,38 +204,78 @@
   <footer>HYPER MUSIC • ALL RIGHTS RESERVED</footer>
 
   <script>
-    let currentAngle = 0;
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7f-iGWIsolXHvFxEySnqxds4POch17S3_8NIat2wP34ykGBtXdxomJ7K6tnEWULV_mQ/exec";
+
+    let songs = [];
     let currentIndex = 0;
+    let angleStep = 120;
 
-    // वही नाम जो गाने और फोटो दोनों के लिए रहेगा
-    const songs = [
-      { name: "Tere Rang Mein", file: "Tere Rang Mein.mp3", lyrics: "🎵 तेरे रंग में रंगे हैं नैना... हाइपर म्यूजिक ऑफिशियल स्टूडियो ट्रैक..." },
-      { name: "Naya Sa Khumaar", file: "Naya Sa Khumaar.mp3", lyrics: "🎵 नया सा खुमार रूह में उतरने लगा... हाइपर म्यूजिक ओरिजिनल..." },
-      { name: "Tehrii Aik Nazzaar", file: "Tehrii Aik Nazzaar.mp3", lyrics: "🎵 ठहरी एक नज़र जो उन पर... धड़कनों ने नया साज़ छेड़ दिया..." }
-    ];
+    async function loadMusic() {
+      try {
+        const response = await fetch(SCRIPT_URL);
+        songs = await response.json();
 
-    function rotate(direction) {
-      currentIndex = (currentIndex + direction + 3) % 3;
-      applyRotation();
+        if (songs && songs.length > 0) {
+          document.getElementById('statusMsg').style.display = 'none';
+          document.getElementById('carouselContainer').style.display = 'flex';
+          document.getElementById('navBtns').style.display = 'flex';
+          document.getElementById('playerCard').style.display = 'block';
+
+          buildCarousel();
+          setTrack(0);
+        } else {
+          document.getElementById('statusMsg').textContent = "Google Drive में कोई गाना नहीं मिला। फोल्डर चेक करें।";
+        }
+      } catch (err) {
+        document.getElementById('statusMsg').textContent = "गाने लोड करने में त्रुटि आई।";
+      }
     }
 
-    function selectTrack(index) {
-      currentIndex = index;
-      applyRotation();
+    function buildCarousel() {
+      const carousel = document.getElementById('carousel');
+      carousel.innerHTML = "";
+      angleStep = 360 / Math.max(songs.length, 3);
+
+      songs.forEach((song, i) => {
+        const card = document.createElement('div');
+        card.className = 'carousel-item';
+        card.style.transform = `rotateY(${i * angleStep}deg) translateZ(160px)`;
+        card.style.backgroundImage = `linear-gradient(180deg, transparent 40%, rgba(9,13,22,0.95)), url('${song.photo}')`;
+        card.onclick = () => setTrack(i);
+
+        card.innerHTML = `
+          <span class="poster-badge">TRACK 0${i + 1}</span>
+          <div class="poster-title">${song.title}</div>
+        `;
+        carousel.appendChild(card);
+      });
     }
 
-    function applyRotation() {
-      currentAngle = currentIndex * -120;
-      document.getElementById('carousel').style.transform = `rotateY(${currentAngle}deg)`;
-      
-      const track = songs[currentIndex];
-      document.getElementById('songTitle').textContent = track.name;
-      document.getElementById('lyricsText').textContent = track.lyrics;
-      
+    function rotate(dir) {
+      if (songs.length === 0) return;
+      currentIndex = (currentIndex + dir + songs.length) % songs.length;
+      updatePlayback();
+    }
+
+    function setTrack(i) {
+      currentIndex = i;
+      updatePlayback();
+    }
+
+    function updatePlayback() {
+      document.getElementById('carousel').style.transform = `rotateY(${currentIndex * -angleStep}deg)`;
+      const current = songs[currentIndex];
+
+      document.getElementById('songTitle').textContent = current.title;
+      document.getElementById('lyricsText').textContent = `🎵 Now Playing: ${current.title} • Hyper Music Studio Track`;
+
       const player = document.getElementById('mainPlayer');
-      player.src = track.file;
+      player.src = current.audioUrl;
+      player.load();
       player.play().catch(() => {});
     }
+
+    loadMusic();
   </script>
 </body>
 </html>
